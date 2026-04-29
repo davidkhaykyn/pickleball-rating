@@ -144,16 +144,82 @@
   /* FOOTER */
   footer { text-align: center; color: var(--text-3); font-size: 11px; margin-top: 50px; }
 
+  /* TABLET */
+  @media (max-width: 720px) {
+    main { padding: 20px 16px 60px; }
+    section + section { margin-top: 26px; }
+    h2 { font-size: 14px; margin-bottom: 12px; }
+    .players { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  }
+
+  /* PHONE */
   @media (max-width: 540px) {
-    main { padding: 18px 14px 60px; }
-    h1 { font-size: 22px; }
-    .modal-stats { grid-template-columns: repeat(2, 1fr); }
-    .podium { gap: 8px; }
-    .podium-card { padding: 10px; }
-    .podium-name { font-size: 13px; }
-    .podium-rating { font-size: 22px; }
-    .match { font-size: 13px; gap: 8px; }
-    .match-team { font-size: 13px; }
+    main { padding: 16px 12px 56px; }
+    .topbar { gap: 10px; margin-bottom: 22px; }
+    h1 { font-size: 20px; }
+    .brand-line { font-size: 10px; }
+    .brand-sub { font-size: 12px; }
+    .pill { padding: 6px 10px; font-size: 11px; }
+    section + section { margin-top: 22px; }
+    h2 { font-size: 13px; margin-bottom: 10px; letter-spacing: 0.10em; }
+
+    /* Podium — stay 3 columns but more compact */
+    .podium { gap: 6px; margin-bottom: 22px; }
+    .podium-card { padding: 10px 8px; border-radius: 12px; }
+    .podium-rank { font-size: 10px; margin-bottom: 4px; }
+    .podium-name { font-size: 13px; margin-bottom: 6px; line-height: 1.15; }
+    .podium-rating { font-size: 20px; }
+    .podium-delta { font-size: 10px; margin-top: 6px; }
+
+    /* Leaderboard */
+    .lb { border-radius: 12px; }
+    .lb-row { grid-template-columns: 28px 1fr auto auto; padding: 11px 12px; gap: 10px; }
+    .lb-rank { font-size: 12px; }
+    .lb-name { font-size: 14px; }
+    .lb-rating { font-size: 15px; }
+    .lb-delta { font-size: 11px; min-width: 48px; }
+
+    /* Sessions / matches */
+    .session-card { padding: 14px 14px 4px; border-radius: 12px; }
+    .session-head { margin-bottom: 10px; }
+    .session-date { font-size: 13px; }
+    .match { padding: 10px 0; gap: 8px; font-size: 12px; }
+    .match-team { font-size: 12px; line-height: 1.25; }
+    .match-score { padding: 3px 9px; font-size: 12px; min-width: 56px; }
+
+    /* History accordion */
+    .history-head { padding: 11px 14px; }
+    .history-date { font-size: 13px; }
+    .history-body { padding: 4px 14px 12px; }
+    .history-body .match { font-size: 12px; padding: 9px 0; }
+
+    /* Player cards: 2 per row on small phones */
+    .players { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .player-card { padding: 12px; border-radius: 12px; }
+    .pc-name { font-size: 14px; }
+    .pc-cur { font-size: 18px; }
+    .pc-meta { font-size: 10px; margin-bottom: 8px; }
+    .pc-spark { height: 42px; }
+    .pc-foot { font-size: 10px; }
+
+    /* Modal */
+    .modal { padding: 18px 14px; border-radius: 14px; }
+    .modal-name { font-size: 18px; }
+    .modal-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 14px 0 16px; }
+    .stat { padding: 9px 10px; }
+    .stat-label { font-size: 10px; }
+    .stat-value { font-size: 15px; }
+    .modal-chart-wrap { height: 240px; padding: 10px; }
+    .modal-close { top: 8px; right: 8px; font-size: 22px; }
+
+    footer { font-size: 10px; margin-top: 36px; }
+  }
+
+  /* TINY phones */
+  @media (max-width: 360px) {
+    .players { grid-template-columns: 1fr; }
+    .lb-name { font-size: 13px; }
+    h1 { font-size: 18px; }
   }
 </style>
 </head>
