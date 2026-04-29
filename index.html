@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<title>Pickleball club</title>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-card: #161b22;
+    --bg-card-2: #1c2128;
+    --bg-card-3: #232a33;
+    --text: #f0f6fc;
+    --text-2: #c9d1d9;
+    --text-3: #8b949e;
+    --border: #30363d;
+    --accent: #c6ff3d;
+    --accent-soft: rgba(198,255,61,0.15);
+    --up: #5dd87a;
+    --down: #ff6b6b;
+    --gold: #ffd166;
+    --silver: #c0c0c8;
+    --bronze: #cd853f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; }
+  main { max-width: 920px; margin: 0 auto; padding: 24px 20px 80px; }
+  h1, h2, h3 { margin: 0; font-weight: 500; }
+  h1 { font-size: 26px; }
+  h2 { font-size: 16px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 500; margin-bottom: 14px; }
+  h3 { font-size: 16px; }
+  a { color: inherit; }
+  button { font: inherit; cursor: pointer; }
+
+  /* HEADER */
+  .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+  .brand-line { font-size: 11px; color: var(--text-3); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 6px; }
+  .brand-sub { font-size: 13px; color: var(--text-3); margin-top: 4px; }
+  .pill {
+    background: var(--accent); color: #0d1117; font-weight: 500;
+    padding: 7px 14px; border-radius: 999px; font-size: 12px;
+    border: none; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .pill.muted { background: var(--bg-card-2); color: var(--text-2); border: 1px solid var(--border); }
+
+  /* STATUS / LOADER */
+  .loader { padding: 80px 0; text-align: center; color: var(--text-3); font-size: 14px; }
+  .err { background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.3); padding: 16px; border-radius: 12px; color: var(--down); font-size: 14px; }
+
+  /* PODIUM */
+  .podium { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+  .podium-card { background: var(--bg-card-2); border: 1px solid var(--border); border-radius: 14px; padding: 14px; position: relative; }
+  .podium-card.gold { background: linear-gradient(180deg, rgba(255,209,102,0.08), transparent), var(--bg-card-2); border-color: rgba(255,209,102,0.3); }
+  .podium-rank { font-size: 11px; color: var(--text-3); margin-bottom: 6px; letter-spacing: 0.06em; }
+  .podium-name { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
+  .podium-rating { font-size: 26px; font-weight: 500; line-height: 1; }
+  .podium-card.gold .podium-rating { color: var(--accent); }
+  .podium-delta { font-size: 11px; margin-top: 8px; color: var(--text-3); }
+  .podium-delta .up { color: var(--up); }
+  .podium-delta .dn { color: var(--down); }
+
+  /* LEADERBOARD */
+  section + section { margin-top: 32px; }
+  .lb { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .lb-row {
+    display: grid; grid-template-columns: 36px 1fr auto auto; align-items: center;
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-rank { color: var(--text-3); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .lb-name { font-size: 15px; }
+  .lb-rating { font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .lb-delta { font-size: 12px; min-width: 56px; text-align: right; font-variant-numeric: tabular-nums; }
+  .lb-delta.up { color: var(--up); }
+  .lb-delta.dn { color: var(--down); }
+  .lb-delta.zero { color: var(--text-3); }
+
+  /* SESSION */
+  .session-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 18px 6px; }
+  .session-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .session-date { font-size: 14px; color: var(--text-3); }
+  .session-count { font-size: 12px; color: var(--text-3); }
+  .match { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); font-size: 14px; }
+  .match:first-child { border-top: none; }
+  .match-team { color: var(--text-2); font-size: 14px; }
+  .match-team.left { text-align: right; }
+  .match-team.right { text-align: left; }
+  .match-team .winner { color: var(--text); font-weight: 500; }
+  .match-score { color: var(--accent); font-weight: 500; font-variant-numeric: tabular-nums; padding: 4px 12px; background: var(--accent-soft); border-radius: 999px; font-size: 13px; min-width: 70px; text-align: center; }
+
+  /* HISTORY */
+  .history-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; }
+  .history-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; user-select: none; }
+  .history-head:hover { background: var(--bg-card-2); }
+  .history-date { font-size: 14px; }
+  .history-count { font-size: 12px; color: var(--text-3); }
+  .history-chev { color: var(--text-3); transition: transform 150ms; font-size: 12px; }
+  .history-item.open .history-chev { transform: rotate(180deg); }
+  .history-body { display: none; padding: 4px 18px 14px; }
+  .history-item.open .history-body { display: block; }
+  .history-body .match { font-size: 13px; padding: 10px 0; }
+
+  /* PLAYERS GRID */
+  .players { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .player-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; cursor: pointer; transition: border-color 120ms, transform 120ms; }
+  .player-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .pc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; }
+  .pc-name { font-size: 15px; font-weight: 500; }
+  .pc-cur { font-size: 22px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .pc-meta { font-size: 11px; color: var(--text-3); margin-bottom: 10px; }
+  .pc-spark { width: 100%; height: 50px; }
+  .pc-foot { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text-3); }
+  .pc-foot .delta.up { color: var(--up); }
+  .pc-foot .delta.dn { color: var(--down); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    z-index: 100; padding: 20px; overflow-y: auto;
+  }
+  .modal-overlay.show { display: flex; align-items: center; justify-content: center; }
+  .modal {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+    max-width: 720px; width: 100%; padding: 22px; position: relative;
+  }
+  .modal-close { position: absolute; top: 14px; right: 14px; background: transparent; border: none; color: var(--text-3); font-size: 20px; cursor: pointer; padding: 6px; line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+  .modal-head { margin-bottom: 16px; }
+  .modal-name { font-size: 22px; font-weight: 500; }
+  .modal-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 20px; }
+  .stat { background: var(--bg-card-2); border-radius: 10px; padding: 10px 12px; }
+  .stat-label { font-size: 11px; color: var(--text-3); margin-bottom: 4px; }
+  .stat-value { font-size: 17px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .stat-value.up { color: var(--up); }
+  .stat-value.dn { color: var(--down); }
+  .modal-chart-wrap { background: var(--bg-card-2); border-radius: 12px; padding: 14px; height: 320px; position: relative; }
+
+  /* FOOTER */
+  footer { text-align: center; color: var(--text-3); font-size: 11px; margin-top: 50px; }
+
+  @media (max-width: 540px) {
+    main { padding: 18px 14px 60px; }
+    h1 { font-size: 22px; }
+    .modal-stats { grid-template-columns: repeat(2, 1fr); }
+    .podium { gap: 8px; }
+    .podium-card { padding: 10px; }
+    .podium-name { font-size: 13px; }
+    .podium-rating { font-size: 22px; }
+    .match { font-size: 13px; gap: 8px; }
+    .match-team { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+  <div class="topbar">
+    <div>
+      <div class="brand-line">Pickleball club</div>
+      <h1>Рейтинг и матчи</h1>
+      <div class="brand-sub" id="subtitle">загрузка…</div>
+    </div>
+    <button class="pill muted" id="reloadBtn" title="Обновить">↻ обновить</button>
+  </div>
+
+  <div id="status" class="loader">Загружаю данные из таблицы…</div>
+
+  <div id="content" style="display:none">
+    <section id="podiumWrap">
+      <div class="podium" id="podium"></div>
+    </section>
+
+    <section id="leaderboardWrap">
+      <h2>Полный рейтинг</h2>
+      <div class="lb" id="leaderboard"></div>
+    </section>
+
+    <section id="lastSessionWrap" style="display:none">
+      <h2>Последняя сессия</h2>
+      <div class="session-card" id="lastSession"></div>
+    </section>
+
+    <section id="historyWrap" style="display:none">
+      <h2>История сессий</h2>
+      <div id="history"></div>
+    </section>
+
+    <section id="playersWrap">
+      <h2>Игроки</h2>
+      <div class="players" id="players"></div>
+    </section>
+  </div>
+
+  <footer>
+    Данные обновляются автоматически из Google&nbsp;Таблицы при каждой загрузке страницы.
+  </footer>
+</main>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" id="modalClose">×</button>
+    <div class="modal-head">
+      <div class="modal-name" id="modalName"></div>
+      <div class="brand-sub" id="modalSub"></div>
+    </div>
+    <div class="modal-stats" id="modalStats"></div>
+    <div class="modal-chart-wrap"><canvas id="modalChart"></canvas></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://tkvdhuuwiaoskjlfeitm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrdmRodXV3aWFvc2tqbGZlaXRtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjgwOTAsImV4cCI6MjA5MzA0NDA5MH0.IhEx9yzIxcxrOLD2g4MtFTrhbY4rtHwUcjTwGWTUV_k';
+const SHEET_API = '/api/sheet';
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const MONTHS_RU = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+
+function fmtDateRU(iso) {
+  if (!iso) return '';
+  const [y,m,d] = iso.split('-').map(Number);
+  return `${d} ${MONTHS_RU[m-1]} ${y}`;
+}
+function fmtDateShort(iso) {
+  if (!iso) return '';
+  const [y,m,d] = iso.split('-').map(Number);
+  return `${String(d).padStart(2,'0')}.${String(m).padStart(2,'0')}`;
+}
+
+function parseDateValue(v) {
+  if (v == null || v === '') return null;
+  if (v instanceof Date) {
+    return `${v.getUTCFullYear()}-${String(v.getUTCMonth()+1).padStart(2,'0')}-${String(v.getUTCDate()).padStart(2,'0')}`;
+  }
+  if (typeof v === 'number') {
+    // Excel serial date number
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+  }
+  if (typeof v === 'string') {
+    const m = v.match(/(\d{1,2})[.\-/](\d{1,2})(?:[.\-/](\d{2,4}))?/);
+    if (m) {
+      let yy = m[3] ? parseInt(m[3]) : new Date().getFullYear();
+      if (yy < 100) yy = 2000 + yy;
+      const dd = String(parseInt(m[1])).padStart(2,'0');
+      const mm = String(parseInt(m[2])).padStart(2,'0');
+      return `${yy}-${mm}-${dd}`;
+    }
+  }
+  return null;
+}
+
+async function fetchWorkbook() {
+  const resp = await fetch(SHEET_API, { cache: 'no-store' });
+  if (!resp.ok) throw new Error('не удалось загрузить файл');
+  const buf = await resp.arrayBuffer();
+  return XLSX.read(buf, { type: 'array', cellDates: true });
+}
+
+function findSheet(wb, namePart) {
+  const exact = wb.Sheets[namePart];
+  if (exact) return exact;
+  const key = wb.SheetNames.find(n => n.toLowerCase().includes(namePart.toLowerCase()));
+  return key ? wb.Sheets[key] : null;
+}
+
+function parseWorkbook(wb) {
+  // --- Динамика рейтинга ---
+  const dynSheet = findSheet(wb, 'Динамика');
+  if (!dynSheet) throw new Error('лист «Динамика рейтинга» не найден');
+  const dynRows = XLSX.utils.sheet_to_json(dynSheet, { header: 1, defval: null });
+  const headerRow = dynRows[0] || [];
+  // Column 0 = name, column 1 = "ИСХ" (start rating), columns 2+ = dates
+  const dateCols = [];
+  for (let c = 2; c < headerRow.length; c++) {
+    const iso = parseDateValue(headerRow[c]);
+    if (iso) dateCols.push({ col: c, iso });
+  }
+
+  const players = {};
+  for (let i = 1; i < dynRows.length; i++) {
+    const row = dynRows[i];
+    if (!row || !row[0]) continue;
+    const name = String(row[0]).trim();
+    const startRating = typeof row[1] === 'number' ? row[1] : null;
+    const history = [];
+    for (const dc of dateCols) {
+      const v = row[dc.col];
+      if (typeof v === 'number') history.push({ date: dc.iso, rating: v });
+    }
+    players[name] = { name, startRating, history, current: history.length ? history[history.length-1].rating : startRating };
+  }
+
+  // --- Players sheet (current rating may be more accurate) ---
+  const playersSheet = findSheet(wb, 'Players');
+  if (playersSheet) {
+    const pRows = XLSX.utils.sheet_to_json(playersSheet, { header: 1, defval: null });
+    for (let i = 1; i < pRows.length; i++) {
+      const r = pRows[i];
+      if (!r || !r[0]) break;
+      const name = String(r[0]).trim();
+      if (players[name]) {
+        if (typeof r[1] === 'number') players[name].startRating = r[1];
+        if (typeof r[2] === 'number') players[name].current = r[2];
+      }
+    }
+  }
+
+  // --- Matches sheet (current session) ---
+  const matchesSheet = findSheet(wb, 'Matches');
+  let currentSession = { date: null, matches: [] };
+  if (matchesSheet) {
+    const mRows = XLSX.utils.sheet_to_json(matchesSheet, { header: 1, defval: null });
+    // Date marker is in cell A11 → row index 10
+    const dateCell = mRows[10] && mRows[10][0];
+    currentSession.date = parseDateValue(dateCell);
+    for (let i = 1; i < 10; i++) {
+      const r = mRows[i];
+      if (!r) continue;
+      const [p1, p2, p3, p4, s1, s2] = [r[0], r[1], r[2], r[3], r[4], r[5]];
+      if (!p1 || !p2 || !p3 || !p4) continue;
+      if (typeof s1 !== 'number' || typeof s2 !== 'number') continue;
+      currentSession.matches.push({
+        p1: String(p1).trim(),
+        p2: String(p2).trim(),
+        p3: String(p3).trim(),
+        p4: String(p4).trim(),
+        s1, s2
+      });
+    }
+  }
+
+  return {
+    players: Object.values(players).sort((a,b) => (b.current||0) - (a.current||0)),
+    dateCols: dateCols.map(d => d.iso),
+    currentSession
+  };
+}
+
+function fingerprint(sess) {
+  if (!sess.date) return null;
+  const m = sess.matches.map(x => `${x.p1}|${x.p2}|${x.p3}|${x.p4}|${x.s1}-${x.s2}`).join(';');
+  return `${sess.date}::${m}`;
+}
+
+async function syncSession(sess) {
+  if (!sess.date || sess.matches.length === 0) return;
+  const fp = fingerprint(sess);
+  // Try insert; unique constraint on fingerprint → 23505 if duplicate (we ignore that)
+  const { error } = await sb.from('sessions').insert({
+    date: sess.date,
+    fingerprint: fp,
+    matches: sess.matches
+  });
+  if (error && error.code !== '23505') {
+    console.warn('sync error', error);
+  }
+}
+
+async function loadAllSessions() {
+  const { data, error } = await sb.from('sessions').select('*').order('date', { ascending: false });
+  if (error) {
+    console.warn('load sessions error', error);
+    return [];
+  }
+  return data || [];
+}
+
+// ----- RENDERING -----
+
+function el(tag, attrs = {}, ...children) {
+  const e = document.createElement(tag);
+  for (const k in attrs) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  for (const c of children) {
+    if (c == null) continue;
+    e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  }
+  return e;
+}
+
+function renderPodium(players) {
+  const podium = document.getElementById('podium');
+  podium.innerHTML = '';
+  const top3 = players.slice(0, 3);
+  const labels = ['№1', '№2', '№3'];
+  const klass = ['gold', 'silver', 'bronze'];
+  top3.forEach((p, i) => {
+    const delta = p.startRating != null && p.current != null ? +(p.current - p.startRating).toFixed(2) : null;
+    const deltaHtml = delta == null ? '' : (
+      delta > 0 ? `<span class="up">+${delta.toFixed(2)}</span>` :
+      delta < 0 ? `<span class="dn">${delta.toFixed(2)}</span>` :
+      `<span>±0.00</span>`
+    );
+    const card = el('div', { class: 'podium-card ' + klass[i] });
+    card.innerHTML = `
+      <div class="podium-rank">${labels[i]}</div>
+      <div class="podium-name">${escapeHTML(p.name)}</div>
+      <div class="podium-rating">${(p.current||0).toFixed(2)}</div>
+      <div class="podium-delta">за сезон: ${deltaHtml || '—'}</div>
+    `;
+    podium.appendChild(card);
+  });
+}
+
+function renderLeaderboard(players) {
+  const lb = document.getElementById('leaderboard');
+  lb.innerHTML = '';
+  players.forEach((p, i) => {
+    const delta = p.startRating != null && p.current != null ? +(p.current - p.startRating).toFixed(2) : null;
+    let deltaCell = '<span class="lb-delta zero">—</span>';
+    if (delta != null) {
+      const klass = delta > 0.005 ? 'up' : delta < -0.005 ? 'dn' : 'zero';
+      const sign = delta > 0 ? '+' : '';
+      deltaCell = `<span class="lb-delta ${klass}">${sign}${delta.toFixed(2)}</span>`;
+    }
+    const row = el('div', { class: 'lb-row', onclick: () => openPlayer(p.name) });
+    row.style.cursor = 'pointer';
+    row.innerHTML = `
+      <div class="lb-rank">${i+1}</div>
+      <div class="lb-name">${escapeHTML(p.name)}</div>
+      <div class="lb-rating">${(p.current||0).toFixed(2)}</div>
+      ${deltaCell}
+    `;
+    lb.appendChild(row);
+  });
+}
+
+function renderSession(container, session) {
+  container.innerHTML = '';
+  const head = el('div', { class: 'session-head' });
+  head.innerHTML = `
+    <div class="session-date">${fmtDateRU(session.date)}</div>
+    <div class="session-count">${session.matches.length} ${declMatch(session.matches.length)}</div>
+  `;
+  container.appendChild(head);
+  session.matches.forEach(m => {
+    const team1Win = m.s1 > m.s2;
+    const team1Cls = team1Win ? 'winner' : '';
+    const team2Cls = team1Win ? '' : 'winner';
+    const node = el('div', { class: 'match' });
+    node.innerHTML = `
+      <div class="match-team left ${team1Cls}">${escapeHTML(m.p1)} · ${escapeHTML(m.p2)}</div>
+      <div class="match-score">${m.s1}–${m.s2}</div>
+      <div class="match-team right ${team2Cls}">${escapeHTML(m.p3)} · ${escapeHTML(m.p4)}</div>
+    `;
+    container.appendChild(node);
+  });
+}
+
+function renderHistory(allSessions, latestDate) {
+  const wrap = document.getElementById('history');
+  const hWrap = document.getElementById('historyWrap');
+  wrap.innerHTML = '';
+  const past = allSessions.filter(s => s.date !== latestDate);
+  if (past.length === 0) { hWrap.style.display = 'none'; return; }
+  hWrap.style.display = '';
+  past.forEach((s, idx) => {
+    const item = el('div', { class: 'history-item' });
+    const head = el('div', {
+      class: 'history-head',
+      onclick: () => item.classList.toggle('open')
+    });
+    head.innerHTML = `
+      <div class="history-date">${fmtDateRU(s.date)}</div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div class="history-count">${s.matches.length} ${declMatch(s.matches.length)}</div>
+        <div class="history-chev">▾</div>
+      </div>
+    `;
+    const body = el('div', { class: 'history-body' });
+    s.matches.forEach(m => {
+      const team1Win = m.s1 > m.s2;
+      const team1Cls = team1Win ? 'winner' : '';
+      const team2Cls = team1Win ? '' : 'winner';
+      const node = el('div', { class: 'match' });
+      node.innerHTML = `
+        <div class="match-team left ${team1Cls}">${escapeHTML(m.p1)} · ${escapeHTML(m.p2)}</div>
+        <div class="match-score">${m.s1}–${m.s2}</div>
+        <div class="match-team right ${team2Cls}">${escapeHTML(m.p3)} · ${escapeHTML(m.p4)}</div>
+      `;
+      body.appendChild(node);
+    });
+    item.appendChild(head);
+    item.appendChild(body);
+    wrap.appendChild(item);
+  });
+}
+
+function renderPlayers(players) {
+  const grid = document.getElementById('players');
+  grid.innerHTML = '';
+  players.forEach(p => {
+    const delta = p.startRating != null && p.current != null ? +(p.current - p.startRating).toFixed(2) : null;
+    const dKlass = delta == null ? '' : (delta > 0.005 ? 'up' : delta < -0.005 ? 'dn' : '');
+    const dStr = delta == null ? '—' : (delta > 0 ? `+${delta.toFixed(2)}` : delta.toFixed(2));
+    const card = el('div', { class: 'player-card', onclick: () => openPlayer(p.name) });
+    card.innerHTML = `
+      <div class="pc-top">
+        <div>
+          <div class="pc-name">${escapeHTML(p.name)}</div>
+          <div class="pc-meta">старт ${(p.startRating||0).toFixed(2)} · сейчас</div>
+        </div>
+        <div class="pc-cur">${(p.current||0).toFixed(2)}</div>
+      </div>
+      <canvas class="pc-spark" data-name="${escapeAttr(p.name)}"></canvas>
+      <div class="pc-foot">
+        <span>за сезон</span>
+        <span class="delta ${dKlass}">${dStr}</span>
+      </div>
+    `;
+    grid.appendChild(card);
+    setTimeout(() => drawSpark(card.querySelector('canvas'), p.history), 0);
+  });
+}
+
+function drawSpark(canvas, history) {
+  if (!canvas || !history || history.length < 2) return;
+  const ctx = canvas.getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: history.map(h => h.date),
+      datasets: [{
+        data: history.map(h => h.rating),
+        borderColor: '#c6ff3d',
+        borderWidth: 1.6,
+        fill: true,
+        backgroundColor: 'rgba(198,255,61,0.10)',
+        tension: 0.25,
+        pointRadius: 0,
+        pointHoverRadius: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      scales: { x: { display: false }, y: { display: false } },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } }
+    }
+  });
+}
+
+let modalChart;
+function openPlayer(name) {
+  const p = window.__state.players.find(x => x.name === name);
+  if (!p) return;
+  document.getElementById('modalName').textContent = p.name;
+
+  const start = p.startRating;
+  const cur = p.current;
+  const delta = (start != null && cur != null) ? +(cur - start).toFixed(2) : null;
+  const peak = p.history.length ? Math.max(...p.history.map(h => h.rating)) : null;
+  const low  = p.history.length ? Math.min(...p.history.map(h => h.rating)) : null;
+  document.getElementById('modalSub').textContent =
+    `${p.history.length} точек · с ${p.history[0]?.date.split('-').reverse().join('.')} по ${p.history[p.history.length-1]?.date.split('-').reverse().join('.')}`;
+
+  const ms = document.getElementById('modalStats');
+  ms.innerHTML = `
+    <div class="stat"><div class="stat-label">Сейчас</div><div class="stat-value">${(cur||0).toFixed(2)}</div></div>
+    <div class="stat"><div class="stat-label">Старт</div><div class="stat-value">${(start||0).toFixed(2)}</div></div>
+    <div class="stat"><div class="stat-label">Δ за сезон</div><div class="stat-value ${delta>0?'up':delta<0?'dn':''}">${delta==null?'—':(delta>0?'+':'')+delta.toFixed(2)}</div></div>
+    <div class="stat"><div class="stat-label">Пик / Низ</div><div class="stat-value">${(peak||0).toFixed(2)} / ${(low||0).toFixed(2)}</div></div>
+  `;
+
+  const ctx = document.getElementById('modalChart').getContext('2d');
+  if (modalChart) modalChart.destroy();
+  const labels = p.history.map(h => fmtDateShort(h.date));
+  modalChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Рейтинг',
+        data: p.history.map(h => h.rating),
+        borderColor: '#c6ff3d',
+        backgroundColor: 'rgba(198,255,61,0.08)',
+        fill: true,
+        tension: 0.25,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        pointBackgroundColor: '#c6ff3d',
+        pointBorderColor: '#0d1117',
+        pointBorderWidth: 1.5,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1117',
+          borderColor: '#30363d',
+          borderWidth: 1,
+          titleColor: '#f0f6fc',
+          bodyColor: '#c9d1d9',
+          callbacks: {
+            label: c => 'Рейтинг: ' + c.parsed.y.toFixed(2)
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#8b949e', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.06)' } }
+      }
+    }
+  });
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  if (modalChart) { modalChart.destroy(); modalChart = null; }
+}
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target.id === 'modal') closeModal();
+});
+
+function declMatch(n) {
+  const a = Math.abs(n) % 100;
+  const b = a % 10;
+  if (a > 10 && a < 20) return 'матчей';
+  if (b > 1 && b < 5) return 'матча';
+  if (b === 1) return 'матч';
+  return 'матчей';
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, ch => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[ch]));
+}
+function escapeAttr(s) { return escapeHTML(s); }
+
+// ----- ENTRY -----
+
+async function load() {
+  document.getElementById('content').style.display = 'none';
+  document.getElementById('status').style.display = '';
+  document.getElementById('status').innerHTML = '<div class="loader">Загружаю данные из таблицы…</div>';
+  try {
+    const wb = await fetchWorkbook();
+    const data = parseWorkbook(wb);
+    window.__state = data;
+
+    // sync current session into Supabase (idempotent via fingerprint)
+    await syncSession(data.currentSession);
+
+    // load all sessions back from Supabase
+    const allSessions = await loadAllSessions();
+
+    // Render
+    document.getElementById('subtitle').textContent =
+      `Сезон 2026 · ${data.players.length} игроков · последняя сессия: ${data.currentSession.date ? fmtDateShort(data.currentSession.date) : '—'}`;
+
+    renderPodium(data.players);
+    renderLeaderboard(data.players);
+
+    // last session block:
+    if (data.currentSession.matches.length && data.currentSession.date) {
+      document.getElementById('lastSessionWrap').style.display = '';
+      renderSession(document.getElementById('lastSession'), data.currentSession);
+    } else if (allSessions.length) {
+      // fallback: show latest from history as "current"
+      document.getElementById('lastSessionWrap').style.display = '';
+      renderSession(document.getElementById('lastSession'), allSessions[0]);
+    }
+
+    renderHistory(allSessions, data.currentSession.date);
+    renderPlayers(data.players);
+
+    document.getElementById('status').style.display = 'none';
+    document.getElementById('content').style.display = '';
+  } catch (e) {
+    console.error(e);
+    document.getElementById('status').innerHTML =
+      `<div class="err">Не удалось загрузить данные: ${escapeHTML(e.message)}<br><br>Попробуй обновить страницу. Если ошибка повторяется — проверь, что таблица доступна по ссылке.</div>`;
+  }
+}
+
+document.getElementById('reloadBtn').addEventListener('click', load);
+load();
+</script>
+
+</body>
+</html>
