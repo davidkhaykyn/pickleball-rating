@@ -113,7 +113,8 @@
   .pc-name { font-size: 15px; font-weight: 500; }
   .pc-cur { font-size: 22px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
   .pc-meta { font-size: 11px; color: var(--text-3); margin-bottom: 10px; }
-  .pc-spark { width: 100%; height: 50px; }
+  .pc-spark { position: relative; width: 100%; height: 50px; }
+  .pc-spark canvas { display: block; width: 100% !important; height: 100% !important; }
   .pc-foot { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text-3); }
   .pc-foot .delta.up { color: var(--up); }
   .pc-foot .delta.dn { color: var(--down); }
@@ -239,11 +240,27 @@ function fmtDateShort(iso) {
 function parseDateValue(v) {
   if (v == null || v === '') return null;
   if (v instanceof Date) {
-    return `${v.getUTCFullYear()}-${String(v.getUTCMonth()+1).padStart(2,'0')}-${String(v.getUTCDate()).padStart(2,'0')}`;
+    // Use local getters because SheetJS keeps spreadsheet calendar dates
+    // anchored to local midnight; UTC getters would shift the day in
+    // negative-offset zones (and even in positive zones if SheetJS used UTC).
+    // Pick whichever method gives a date-only value.
+    const localY = v.getFullYear(), localM = v.getMonth()+1, localD = v.getDate();
+    const utcY = v.getUTCFullYear(), utcM = v.getUTCMonth()+1, utcD = v.getUTCDate();
+    // If the time is 00:00 local, local getters are correct.
+    // If the time is 00:00 UTC (some SheetJS configs), UTC getters are correct.
+    // Heuristic: prefer the one whose hour-component is 0.
+    const useUTC = v.getHours() !== 0 && v.getUTCHours() === 0;
+    const y = useUTC ? utcY : localY;
+    const m = useUTC ? utcM : localM;
+    const d = useUTC ? utcD : localD;
+    return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
   }
   if (typeof v === 'number') {
-    // Excel serial date number
-    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    // Excel serial date number — date-only, anchor at local midnight
+    const ms = (v - 25569) * 86400 * 1000;
+    const d = new Date(ms);
+    // Excel epoch is UTC 1970-01-01; the serial gives a UTC datetime.
+    // For pure calendar dates we want the UTC components.
     return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
   }
   if (typeof v === 'string') {
@@ -516,7 +533,7 @@ function renderPlayers(players) {
         </div>
         <div class="pc-cur">${(p.current||0).toFixed(2)}</div>
       </div>
-      <canvas class="pc-spark" data-name="${escapeAttr(p.name)}"></canvas>
+      <div class="pc-spark"><canvas data-name="${escapeAttr(p.name)}"></canvas></div>
       <div class="pc-foot">
         <span>за сезон</span>
         <span class="delta ${dKlass}">${dStr}</span>
